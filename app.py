@@ -1,109 +1,94 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import plotly.graph_objects as go
 
-# --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Diniz Health App", layout="wide", page_icon="🛡️")
+# 1. CONFIGURAÇÃO DA PÁGINA (Ajusta o título na aba do navegador)
+st.set_page_config(page_title="Diniz Health App", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CONEXÃO COM O CÉREBRO (GOOGLE SHEETS) ---
-# Substitua o link abaixo pelo link da sua planilh
+# 2. LINK DA PLANILHA (Sua Google Sheet)
 url = "https://docs.google.com/spreadsheets/d/10Jx1PiZmb_IEYSXXqJdi2UDMdknmPytE-gSoqfY-kK8/edit?usp=sharing"
+
+# 3. ALGORITMO DE VELOCIDADE (Cache de 10 minutos)
+@st.cache_data(ttl=600)
+def carregar_dados(url_link):
+    # Converte link de visualização em link de download direto para o Python
+    csv_url = url_link.replace('/edit?usp=sharing', '/export?format=csv')
+    data = pd.read_csv(csv_url)
+    return data
+
+# Tenta carregar os dados
 try:
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    df = conn.read(spreadsheet=url)
-    # Limpeza básica de dados
-    df.columns = df.columns.str.strip() 
-except:
-    st.error("Erro ao conectar com a Google Sheet. Verifique o link e as permissões.")
-    st.stop()
+    df = carregar_dados(url)
+    
+    # --- INTERFACE DARK MODE ---
+    st.markdown("""
+        <style>
+        .main { background-color: #111111; }
+        .stApp { background-color: #111111; }
+        h1 { color: #00BFFF; font-family: 'sans serif'; }
+        </style>
+    """, unsafe_allow_stdio=True)
 
-# --- DEFINIÇÕES DE METAS (ESTRELAS ★) ---
-metas = {'peso': 67.0, 'cals': 1650, 'prot': 130, 'agua': 3000, 'fibra': 30, 'carbo': 150}
-colors = {
-    'peso': '#2ca02c', 'fibra': '#8b4513', 'prot': '#000000', 
-    'carbo': '#ff7f0e', 'cals': '#d62728', 'agua_line': '#4682B4', 'agua_fill': '#B0E0E6'
-}
+    st.title("🚀 Diniz Performance Dashboard")
 
-# --- INTERFACE DE USUÁRIO (OPÇÃO B) ---
-st.markdown(f"### 🛡️ Diniz Health App | Controle Gástrico (Dia 5)")
+    # 4. CRIAÇÃO DO GRÁFICO (MODO DARK NEON)
+    fig = go.Figure()
 
-# Campo de entrada centralizado
-user_input = st.text_input("O que consumiu agora, Diniz?", placeholder="Ex: 500ml água e 1 Heineken")
+    # Água (Área Azul Neon)
+    fig.add_trace(go.Scatter(
+        x=df['Data'], y=df['Agua'], fill='tozeroy',
+        name='Água (ml)', line=dict(color='#00BFFF', width=4),
+        hovertemplate='%{y}ml'
+    ))
 
-if user_input:
-    st.success(f"Recebido: '{user_input}'. Atualize a planilha para ver no gráfico!")
+    # Peso (Linha Verde Neon)
+    fig.add_trace(go.Scatter(
+        x=df['Data'], y=df['Peso'], name='Peso (kg)',
+        line=dict(color='#39FF14', width=6),
+        hovertemplate='%{y}kg'
+    ))
 
-# --- CONSTRUÇÃO DO DASHBOARD (PLOTLY) ---
-fig = go.Figure()
+    # Proteína (Barras Brancas de Alta Visibilidade)
+    fig.add_trace(go.Bar(
+        x=df['Data'], y=df['Proteinas'], name='Proteína (g)',
+        marker_color='#FFFFFF', opacity=0.8,
+        hovertemplate='%{y}g'
+    ))
 
-# 1. Água (Área Azul)
-fig.add_trace(go.Scatter(
-    x=df['Data'], y=df['Agua'], fill='tozeroy', 
-    name=f"Água (★ {int(metas['agua'])})",
-    line=dict(color=colors['agua_line'], width=4),
-    fillcolor='rgba(176, 224, 230, 0.4)'
-))
+    # 5. LAYOUT E ESTÉTICA
+    fig.update_layout(
+        plot_bgcolor='#111111',
+        paper_bgcolor='#111111',
+        font_color='#FFFFFF',
+        height=750,
+        margin=dict(l=10, r=10, t=50, b=10),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        xaxis=dict(showgrid=False, tickfont=dict(size=14)),
+        yaxis=dict(gridcolor='#333333', tickfont=dict(size=14)),
+        hovermode="x unified"
+    )
 
-# 2. Peso (Linha Verde com Pontos)
-fig.add_trace(go.Scatter(
-    x=df['Data'], y=df['Peso'], name=f"Peso (★ {int(metas['peso'])})",
-    line=dict(color=colors['peso'], width=6),
-    marker=dict(size=12, symbol='circle')
-))
+    # Adicionar Linhas de Meta (Estrelas ★)
+    fig.add_hline(y=3000, line_dash="dot", line_color="#00BFFF", 
+                  annotation_text="Meta Água (3L)", annotation_font_color="#00BFFF")
+    fig.add_hline(y=130, line_dash="dot", line_color="#FFFFFF", 
+                  annotation_text="Meta Proteína (130g)", annotation_font_color="#FFFFFF")
 
-# 3. Proteína (Barras Pretas)
-fig.add_trace(go.Bar(
-    x=df['Data'], y=df['Proteinas'], name=f"Proteína (★ {int(metas['prot'])})",
-    marker_color=colors['prot'], opacity=0.8
-))
+    # Mostrar o Gráfico
+    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-# 4. Fibras (Barras Marrons)
-fig.add_trace(go.Bar(
-    x=df['Data'], y=df['Fibras'], name=f"Fibras (★ {int(metas['fibra'])})",
-    marker_color=colors['fibra'], opacity=0.8
-))
+    # 6. MÉTRICAS RÁPIDAS (RESUMO FINAL)
+    col1, col2, col3 = st.columns(3)
+    ultimo_peso = df['Peso'].iloc[-1]
+    ultima_agua = df['Agua'].iloc[-1]
+    
+    col1.metric("Peso Atual", f"{ultimo_peso} kg", delta_color="inverse")
+    col2.metric("Hidratação", f"{ultima_agua} ml", delta=f"{ultima_agua-3000} ml")
+    col3.metric("Status", "🔥 Em Alta Performance")
 
-# --- CONFIGURAÇÃO DARK MODE ---
-fig.update_layout(
-    plot_bgcolor='#111111',  # Fundo do gráfico preto profundo
-    paper_bgcolor='#111111', # Fundo da página preto profundo
-    font_color='#FFFFFF',    # Letras brancas para contraste
-    title={
-        'text': "📊 DASHBOARD DR. DINIZ - PERFORMANCE",
-        'y':0.95, 'x':0.5, 'xanchor': 'center', 'yanchor': 'top',
-        'font': {'size': 24, 'color': '#00CCFF'} # Título em azul neon
-    },
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="right",
-        x=1
-    ),
-    margin=dict(l=20, r=20, t=100, b=20),
-    height=800,
-    hovermode="x unified"
-)
+except Exception as e:
+    st.error(f"Erro ao ler a planilha: {e}")
+    st.info("Verifique se os títulos das colunas na planilha são: Data, Peso, Agua, Proteinas, Fibras, Carbos")
 
-# Ajuste das linhas de grade para não ficarem muito fortes no preto
-fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#333333')
-fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#333333')
-
-)
-
-# Adicionando as Estrelas nos Eixos Y
-fig.update_yaxes(tickvals=[metas['peso'], metas['prot'], metas['agua'], metas['cals']],
-                 ticktext=[f"★ {metas['peso']}", f"★ {metas['prot']}", f"★ {metas['agua']}", f"★ {metas['cals']}"])
-
-# Exibir Gráfico
-st.plotly_chart(fig, use_container_width=True)
-
-# --- RODAPÉ DE STATUS ---
-hoje = df.iloc[-1]
-st.divider()
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Água Total", f"{int(hoje['Agua'])} ml", delta=f"{int(hoje['Agua'] - metas['agua'])} ml")
-c2.metric("Peso Atual", f"{hoje['Peso']} kg", delta=f"{round(hoje['Peso'] - metas['peso'], 2)} kg", delta_color="inverse")
-c3.metric("Proteína", f"{int(hoje['Proteinas'])} g")
-c4.metric("Fibras", f"{hoje['Fibras']} g")
+# Rodapé discreto
+st.markdown("<p style='text-align: center; color: #555555;'>Atualizado em tempo real via Google Sheets</p>", unsafe_allow_html=True)
