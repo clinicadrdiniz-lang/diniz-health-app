@@ -7,9 +7,8 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="Diniz Health App", layout="wide", page_icon="🛡️")
 
 # --- CONEXÃO COM O CÉREBRO (GOOGLE SHEETS) ---
-# Substitua o link abaixo pelo link da sua planilha
-url="https://docs.google.com/spreadsheets/d/10Jx1PiZmb_IEYSXXqJdi2UDMdknmPytE-gSoqfY-kK8/edit?usp=sharing"
-
+# Substitua o link abaixo pelo link da sua planilh
+url = "https://docs.google.com/spreadsheets/d/10Jx1PiZmb_IEYSXXqJdi2UDMdknmPytE-gSoqfY-kK8/edit?usp=sharing"
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     df = conn.read(spreadsheet=url)
