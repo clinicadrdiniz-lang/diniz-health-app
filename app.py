@@ -64,17 +64,32 @@ fig.add_trace(go.Bar(
     marker_color=colors['fibra'], opacity=0.8
 ))
 
-# --- LAYOUT FINAL (CENTRALIZADO) ---
+# --- CONFIGURAÇÃO DARK MODE ---
 fig.update_layout(
-    title={'text': "DASHBOARD CONSOLIDADO: METAS ESTRELA", 'y':0.95, 'x':0.5, 'xanchor': 'center'},
+    plot_bgcolor='#111111',  # Fundo do gráfico preto profundo
+    paper_bgcolor='#111111', # Fundo da página preto profundo
+    font_color='#FFFFFF',    # Letras brancas para contraste
+    title={
+        'text': "📊 DASHBOARD DR. DINIZ - PERFORMANCE",
+        'y':0.95, 'x':0.5, 'xanchor': 'center', 'yanchor': 'top',
+        'font': {'size': 24, 'color': '#00CCFF'} # Título em azul neon
+    },
     legend=dict(
-        orientation="h", yanchor="bottom", y=0.88, xanchor="center", x=0.5,
-        font=dict(size=14, color="black"), borderwidth=1
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
     ),
     margin=dict(l=20, r=20, t=100, b=20),
-    hovermode="x unified",
-    template="plotly_white",
-    height=750
+    height=800,
+    hovermode="x unified"
+)
+
+# Ajuste das linhas de grade para não ficarem muito fortes no preto
+fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#333333')
+fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#333333')
+
 )
 
 # Adicionando as Estrelas nos Eixos Y
