@@ -17,77 +17,79 @@ def carregar_dados(url_link):
 try:
     df = carregar_dados(url)
     
-    # --- ESTILO DARK MODE ---
+    # --- ESTILO FUNDO BRANCO ---
     st.markdown("""
         <style>
-        .main { background-color: #0E1117; }
-        .stApp { background-color: #0E1117; }
-        h1 { color: #00BFFF; text-align: center; margin-bottom: 0px; }
-        [data-testid="stMetricValue"] { font-size: 20px !important; color: #FFFFFF !important; }
+        .main { background-color: #FFFFFF; }
+        .stApp { background-color: #FFFFFF; }
+        h1 { color: #1E1E1E; text-align: center; font-family: 'Helvetica'; }
+        [data-testid="stMetricValue"] { color: #1E1E1E !important; font-size: 20px !important; }
+        [data-testid="stMetricLabel"] { color: #555555 !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("🚀 Diniz Performance Dashboard")
+    st.title("📊 Diniz Performance Dashboard")
 
-    # 3. CRIAÇÃO DO GRÁFICO (EIXO DUPLO PARA PROPORÇÃO)
+    # 3. CRIAÇÃO DO GRÁFICO (EIXO DUPLO)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     # BARRAS AGRUPADAS (Macros e Calorias) - Eixo Secundário
-    # Calorias
+    # Calorias (Laranja)
     fig.add_trace(go.Bar(
         x=df['Data'], y=df['Calorias'],
-        name='🔥 Kcal', marker_color='#FF8C00', opacity=0.7
+        name='🔥 Kcal', marker_color='#FF8C00', opacity=0.8
     ), secondary_y=True)
 
-    # Proteínas
+    # Proteínas (Cinza Escuro para destacar no branco)
     fig.add_trace(go.Bar(
         x=df['Data'], y=df['Proteinas'],
-        name='🥩 Prot', marker_color='#FFFFFF', opacity=0.9
+        name='🥩 Prot', marker_color='#333333', opacity=0.9
     ), secondary_y=True)
 
-    # Carboidratos
+    # Carboidratos (Amarelo Ouro)
     fig.add_trace(go.Bar(
         x=df['Data'], y=df['Carbos'],
-        name='🍞 Carb', marker_color='#FFFF00', opacity=0.8
+        name='🍞 Carb', marker_color='#FFD700', opacity=0.8
     ), secondary_y=True)
 
-    # Fibras
+    # Fibras (Verde Musgo)
     fig.add_trace(go.Bar(
         x=df['Data'], y=df['Fibras'],
-        name='🥗 Fibra', marker_color='#CD853F', opacity=0.9
+        name='🥗 Fibra', marker_color='#228B22', opacity=0.8
     ), secondary_y=True)
 
-    # ÁGUA (Permanece em Área/Linha para não confundir com comida)
+    # ÁGUA (Área Azul Suave)
     fig.add_trace(go.Scatter(
         x=df['Data'], y=df['Agua'], fill='tozeroy',
         name='💧 Água', line=dict(color='#00BFFF', width=1),
-        opacity=0.1
+        opacity=0.2
     ), secondary_y=True)
 
-    # PESO (Linha de Tendência - Eixo Principal à Esquerda)
+    # PESO (Linha de Tendência - Verde Forte)
     fig.add_trace(go.Scatter(
         x=df['Data'], y=df['Peso'],
-        name='⚖️ Peso', line=dict(color='#39FF14', width=5),
+        name='⚖️ Peso', line=dict(color='#006400', width=5),
         mode='lines+markers+text', 
         text=df['Peso'], textposition="top center",
-        textfont=dict(color='#39FF14')
+        textfont=dict(color='#006400', size=12)
     ), secondary_y=False)
 
-    # 4. CONFIGURAÇÃO DE LAYOUT (MODO AGRUPADO)
+    # 4. CONFIGURAÇÃO DE LAYOUT (FUNDO BRANCO)
     fig.update_layout(
-        plot_bgcolor='#0E1117', paper_bgcolor='#0E1117',
-        font_color='#FFFFFF', height=750,
+        plot_bgcolor='#FFFFFF', 
+        paper_bgcolor='#FFFFFF',
+        font_color='#1E1E1E', 
+        height=700,
         margin=dict(l=10, r=10, t=50, b=10),
         legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
         hovermode="x unified",
-        barmode='group', # ESTE COMANDO AGRUPA AS BARRAS LADO A LADO
-        bargap=0.15, 
-        bargroupgap=0.1 
+        barmode='group',
+        bargap=0.15
     )
 
-    # Ajuste de escalas
-    fig.update_yaxes(title_text="Peso (kg)", secondary_y=False, showgrid=False, range=[60, 80])
-    fig.update_yaxes(secondary_y=True, gridcolor='#222222', showticklabels=False) # Esconde números do eixo 2 para limpar o visual
+    # Ajuste de eixos e grelha (cinza claro para não poluir)
+    fig.update_yaxes(title_text="Peso (kg)", secondary_y=False, showgrid=True, gridcolor='#EEEEEE', range=[60, 80])
+    fig.update_yaxes(secondary_y=True, showgrid=False, showticklabels=False)
 
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
@@ -107,6 +109,5 @@ try:
 
 except Exception as e:
     st.error(f"Erro: {e}")
-    st.info("Certifique-se que as colunas na planilha são: Data, Peso, Agua, Proteinas, Calorias, Carbos, Fibras")
 
-st.markdown("<p style='text-align: center; color: #444444;'>Dashboard Proporcional Dr. Diniz</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888888; font-size: 12px;'>Dashboard Dr. Diniz Performance</p>", unsafe_allow_html=True)
