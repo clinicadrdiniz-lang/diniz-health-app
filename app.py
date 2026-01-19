@@ -29,7 +29,7 @@ try:
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("🚀 Diniz Performance Dashboard")
+    st.title("🚀 Nutri_Diniz")
 
     # 3. CRIAÇÃO DO GRÁFICO (EIXO DUPLO PARA PROPORÇÃO)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
